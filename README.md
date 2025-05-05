@@ -397,8 +397,8 @@ For technical support, please contact:
 
 Idris Fabiyi  
 Fab Soft  
-Email: support@fabsoft.com  
-Website: https://fabsoft.com
+Email: support@idro.co.uk 
+Website: https://idro.co.uk
 
 ## License
 
