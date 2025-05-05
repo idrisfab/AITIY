@@ -1,0 +1,69 @@
+// Analytics schema updates
+
+// Add ChatAnalytics model to store processed analytics data
+model ChatAnalytics {
+  id                String     @id @default(uuid())
+  chatEmbed         ChatEmbed  @relation(fields: [embedId], references: [id], onDelete: Cascade)
+  embedId           String
+  teamId            String
+  period            String     // "daily", "weekly", "monthly"
+  date              DateTime   // The date this analytics record represents
+  
+  // Conversation metrics
+  totalConversations    Int
+  averageMessageCount   Float
+  averageUserMessages   Float
+  averageAssistantMessages Float
+  averageConversationLength Float  // In seconds
+  
+  // Token usage metrics
+  totalTokens           Int
+  promptTokens          Int
+  completionTokens      Int
+  
+  // Response time metrics
+  averageResponseTime   Float  // In seconds
+  
+  // Common topics (stored as JSON)
+  commonTopics          Json?  // {topic: string, count: number}[]
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([embedId])
+  @@index([teamId])
+  @@index([date])
+  @@unique([embedId, period, date])
+}
+
+// Add ChatSession model to track individual chat sessions
+model ChatSession {
+  id                String     @id @default(uuid())
+  sessionId         String     @unique
+  chatEmbed         ChatEmbed  @relation(fields: [embedId], references: [id], onDelete: Cascade)
+  embedId           String
+  
+  startTime         DateTime
+  endTime           DateTime?
+  messageCount      Int        @default(0)
+  userMessageCount  Int        @default(0)
+  assistantMessageCount Int    @default(0)
+  
+  // User information (if available)
+  userEmail         String?
+  ipAddress         String?
+  
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([embedId])
+  @@index([sessionId])
+  @@index([startTime])
+}
+
+// Add relationship between ChatEmbed and ChatAnalytics
+model ChatEmbed {
+  // Existing fields...
+  analytics         ChatAnalytics[]
+  sessions          ChatSession[]
+}

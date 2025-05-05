@@ -1,0 +1,16 @@
+#DATABASE_URL=postgresql://USER:password@localhost:5432/DATABASE?schema=public
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+ENCRYPTION_KEY=aada81c2931aed265e7972c51b0a5536314d90c1800643d9d1b09238b6f2497a
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/attiy"
+JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-specific-password"
+FRONTEND_URL="http://localhost:3001"
+
+NEXTAUTH_SECRET = "aada81c2931aed265e7972c51b0a5536314d90c1800643d9d1b09238b6f2497b"
+
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-here

@@ -1,0 +1,32 @@
+# Embeds Issue Resolution PRD
+
+## Background
+The ATTIY application provides embed functionality that allows users to embed chat widgets in their websites. However, there are currently issues when trying to use the embeds, resulting in 404 errors and other related problems.
+
+## Current Issues
+1. 404 errors when fetching embed data from the API endpoint
+2. The embed script is not able to load the configuration properly
+3. Iframe and other embed options are not functioning correctly
+
+## Project Requirements
+We need to fix the embed functionality to ensure it works reliably across all integration types (script, iframe, React, Vue).
+
+## Key Features and Tasks
+
+### API Endpoint Verification
+- Verify the API endpoint for fetching public embed configurations
+- Ensure the API route exists and is correctly implemented
+- Verify the API endpoint path matches what's expected by the frontend
+
+### Environment Configuration
+- Check and update environment variables related to the API endpoint and app URL
+- Ensure consistent API endpoint URLs across development and production
+
+### Embed Implementation
+- Debug and fix the embed.js script if necessary
+- Verify the integration between the embed code and the API
+
+### Testing and Verification
+- Test all embed options (script, iframe, React, Vue) to ensure they work
+- Verify embeds work across different team IDs and embed IDs
+- Create a comprehensive test plan for embeds 

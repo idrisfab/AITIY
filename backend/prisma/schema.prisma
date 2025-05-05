@@ -1,0 +1,223 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  password        String
+  name            String
+  resetToken      String?
+  resetTokenExpiry DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  teams           TeamMember[]
+  apiKeys         ApiKey[]
+  sentInvitations TeamInvitation[] @relation("Inviter")
+}
+
+model Team {
+  id          String           @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  members     TeamMember[]
+  invitations TeamInvitation[]
+  chatEmbeds  ChatEmbed[]
+  chatUsage   ChatUsage[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  team      Team     @relation(fields: [teamId], references: [id])
+  teamId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  role      String   @default("MEMBER") // OWNER, ADMIN, MEMBER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, userId])
+}
+
+model TeamInvitation {
+  id        String   @id @default(uuid())
+  team      Team     @relation(fields: [teamId], references: [id])
+  teamId    String
+  email     String
+  inviter   User     @relation("Inviter", fields: [inviterId], references: [id])
+  inviterId String
+  status    String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, email])
+}
+
+model ApiKey {
+  id          String   @id @default(uuid())
+  name        String
+  key         String   @unique
+  vendor      String   @default("openai")
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  lastUsedAt  DateTime?
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ChatEmbed {
+  id              String       @id @default(uuid())
+  team            Team         @relation(fields: [teamId], references: [id])
+  teamId          String
+  name            String
+  description     String?
+  welcomeMessage  String?
+  systemPrompt    String?
+  theme           String?      // light, dark, system
+  position        String?      // bottom-right, bottom-left, top-right, top-left
+  primaryColor    String?
+  isActive        Boolean      @default(true)
+  apiKeyId        String?
+  modelVendor     String?      @default("openai")
+  modelName       String?      @default("gpt-4")
+  width           Int?
+  height          Int?
+  responsive      Boolean?     @default(true)
+  settings        Json?        // Expected structure:
+                              // {
+                              //   allowAttachments: boolean,
+                              //   requireUserEmail: boolean,
+                              //   showBranding: boolean,
+                              //   customCss?: string,
+                              //   maxTokensPerMessage?: number,
+                              //   temperature?: number,
+                              //   messageHistory?: number,
+                              //   customFontFamily?: string,
+                              //   customHeaderText?: string,
+                              //   customPlaceholderText?: string,
+                              //   showTypingIndicator?: boolean,
+                              //   enableMarkdown?: boolean,
+                              //   enableCodeHighlighting?: boolean,
+                              //   enableEmoji?: boolean,
+                              //   rateLimit?: {
+                              //     maxRequestsPerHour: number,
+                              //     enabled: boolean
+                              //   }
+                              // }
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  chatMessages    ChatMessage[]
+  chatUsage       ChatUsage[]
+  analytics       ChatAnalytics[]
+  sessions        ChatSession[]
+}
+
+model ChatMessage {
+  id            String     @id @default(uuid())
+  chatEmbed     ChatEmbed  @relation(fields: [embedId], references: [id], onDelete: Cascade)
+  embedId       String
+  sessionId     String
+  role          String     // "user", "assistant", "system"
+  content       String
+  tokenCount    Int?       // Number of tokens used in this message
+  createdAt     DateTime   @default(now())
+
+  @@index([embedId, sessionId])
+  @@index([createdAt])
+}
+
+model ChatUsage {
+  id                String     @id @default(uuid())
+  chatEmbed         ChatEmbed  @relation(fields: [embedId], references: [id], onDelete: Cascade)
+  embedId           String
+  team              Team       @relation(fields: [teamId], references: [id])
+  teamId            String
+  sessionId         String
+  promptTokens      Int
+  completionTokens  Int
+  totalTokens       Int
+  model             String
+  success           Boolean    @default(true)
+  errorMessage      String?
+  ipAddress         String?
+  createdAt         DateTime   @default(now())
+
+  @@index([embedId])
+  @@index([teamId])
+  @@index([createdAt])
+} 
+
+// Analytics models for tracking chat performance and insights
+
+// ChatAnalytics stores aggregated analytics data for reporting
+model ChatAnalytics {
+  id                String     @id @default(uuid())
+  chatEmbed         ChatEmbed  @relation(fields: [embedId], references: [id], onDelete: Cascade)
+  embedId           String
+  teamId            String
+  period            String     // "daily", "weekly", "monthly"
+  date              DateTime   // The date this analytics record represents
+  
+  // Conversation metrics
+  totalConversations    Int
+  averageMessageCount   Float
+  averageUserMessages   Float
+  averageAssistantMessages Float
+  averageConversationLength Float  // In seconds
+  
+  // Token usage metrics
+  totalTokens           Int
+  promptTokens          Int
+  completionTokens      Int
+  
+  // Response time metrics
+  averageResponseTime   Float  // In seconds
+  
+  // Common topics (stored as JSON)
+  commonTopics          Json?  // {topic: string, count: number}[]
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([embedId])
+  @@index([teamId])
+  @@index([date])
+  @@unique([embedId, period, date])
+}
+
+// ChatSession tracks individual chat sessions for detailed analysis
+model ChatSession {
+  id                String     @id @default(uuid())
+  sessionId         String     @unique
+  chatEmbed         ChatEmbed  @relation(fields: [embedId], references: [id], onDelete: Cascade)
+  embedId           String
+  
+  startTime         DateTime
+  endTime           DateTime?
+  messageCount      Int        @default(0)
+  userMessageCount  Int        @default(0)
+  assistantMessageCount Int    @default(0)
+  
+  // User information (if available)
+  userEmail         String?
+  ipAddress         String?
+  
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([embedId])
+  @@index([sessionId])
+  @@index([startTime])
+}

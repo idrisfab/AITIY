@@ -1,0 +1,77 @@
+import express from 'express';
+import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import cookieParser from 'cookie-parser';
+import { apiLimiter } from './middleware/rateLimit';
+import { errorHandler } from './middleware/error-handler';
+import { requestLogger } from './middleware/requestLogger';
+import { sanitizeInputs } from './middleware/sanitization';
+import { csrfMiddleware, generateCsrfToken } from './middleware/csrf';
+import { securityHeaders } from './middleware/securityHeaders';
+import { validateEnv } from './utils/validateEnv';
+import { swaggerSpec } from './swagger';
+import authRoutes from './routes/auth';
+import userRoutes from './routes/user';
+import teamRoutes from './routes/team';
+import apiKeyRoutes from './routes/apiKey';
+import embedRoutes from './routes/embed';
+import modelRoutes from './routes/models';
+import chatRoutes from './routes/chat';
+import proxyRoutes from './routes/proxy';
+import analyticsRoutes from './routes/analytics';
+import publicEmbedsRoutes from './routes/public/embeds';
+
+// Validate environment variables
+validateEnv();
+
+const app = express();
+
+// Basic middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true, // Important for cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token', 'X-XSRF-TOKEN']
+}));
+app.use(securityHeaders);
+app.use(cookieParser()); // Required for CSRF cookies
+app.use(express.json());
+app.use(requestLogger);
+app.use(apiLimiter);
+app.use(sanitizeInputs);
+
+// CSRF protection (generate token for GET requests, validate for others)
+app.use((req, res, next) => {
+  // Skip CSRF protection for proxy routes (used by embeds)
+  if (req.path.startsWith('/api/proxy')) {
+    return next();
+  }
+  
+  if (req.method === 'GET') {
+    generateCsrfToken(req, res, next);
+  } else {
+    csrfMiddleware(req, res, next);
+  }
+});
+
+// API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Public routes - no authentication required
+app.use('/api/public/embeds', publicEmbedsRoutes);
+
+// Protected routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/teams', teamRoutes);
+app.use('/api/teams', embedRoutes); // Register embed routes under /api/teams path
+app.use('/api/keys', apiKeyRoutes);
+app.use('/api/models', modelRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/proxy', proxyRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
+// Error handling
+app.use(errorHandler);
+
+export default app; 
