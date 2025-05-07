@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* W3Schools Light Theme Inspired */
+  --background: #F1F1F1;
+  --foreground: #333333;
+  --card: #FFFFFF;
+  --card-foreground: #333333;
+  --popover: #FFFFFF;
+  --popover-foreground: #333333;
+  --primary: #282A35;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E7E7E7;
+  --secondary-foreground: #333333;
+  --muted: #E7E7E7;
+  --muted-foreground: #666666;
+  --accent: #04AA6D;
+  --accent-foreground: #FFFFFF;
+  --destructive: #FF5252;
+  --destructive-foreground: #FFFFFF;
+  --border: #D3D3D3;
+  --input: #D3D3D3; /* Input border color */
+  --input-background: #FFFFFF; /* Input background color */
+  --input-foreground: #333333; /* Input text color */
+  --input-placeholder: #9ca3af; /* Placeholder text color (adjust if needed) */
+  --ring: #04AA6D;
+
+  --radius: 0.5rem; /* Example border radius variable */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Define dark theme variables here - using placeholders for now */
+    --background: #1a1a1a; /* Darker background */
+    --foreground: #e0e0e0; /* Lighter text */
+    --card: #2c2c2c;       /* Darker card */
+    --card-foreground: #e0e0e0;
+    --popover: #2c2c2c;
+    --popover-foreground: #e0e0e0;
+    --primary: #3a3c4a;    /* Slightly lighter dark primary */
+    --primary-foreground: #f0f0f0;
+    --secondary: #444444;  /* Darker secondary */
+    --secondary-foreground: #e0e0e0;
+    --muted: #444444;
+    --muted-foreground: #a0a0a0;
+    --accent: #05c77e;     /* Slightly brighter accent */
+    --accent-foreground: #1a1a1a;
+    --destructive: #ff6b6b;
+    --destructive-foreground: #1a1a1a;
+    --border: #555555;
+    --input: #555555;
+    --input-background: #2c2c2c;
+    --input-foreground: #e0e0e0;
+    --input-placeholder: #777777;
+    --ring: #05c77e;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    /* Keep existing font-family or update if desired */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  /* Apply base styles using @layer base to ensure proper precedence */
+  * {
+    @apply border-border;
+  }
+
+  /* You might want to style other base elements like links here */
+  /* a {
+    @apply text-accent underline;
+  } */
+}
+
+/* Keep existing input styles, they should now use the updated variables */
+input::placeholder {
+  color: var(--input-placeholder);
+  opacity: 1;
+}
+
+input {
+  background-color: var(--input-background);
+  color: var(--input-foreground);
+  border-color: var(--input-border);
+  /* Add some default padding and border styles */
+  @apply px-3 py-2 border rounded-md;
+}
+
+/* Style buttons globally using @layer components */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
+  }
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90;
+  }
+  .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+  .btn-outline {
+    @apply border border-input hover:bg-accent hover:text-accent-foreground;
+  }
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground;
+  }
+  .btn-link {
+    @apply underline-offset-4 hover:underline text-primary;
+  }
+  /* Add size variants */
+  .btn-lg {
+    @apply h-11 px-8 rounded-md;
+  }
+  .btn-sm {
+    @apply h-9 px-3 rounded-md;
+  }
+  .btn-icon {
+    @apply h-10 w-10;
+  }
+}
+
+/* Remove the old @theme inline block */
+/* @theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+} */
