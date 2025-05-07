@@ -22,6 +22,9 @@ const apiKey_1 = __importDefault(require("./routes/apiKey"));
 const embed_1 = __importDefault(require("./routes/embed"));
 const models_1 = __importDefault(require("./routes/models"));
 const chat_1 = __importDefault(require("./routes/chat"));
+const proxy_1 = __importDefault(require("./routes/proxy"));
+const analytics_1 = __importDefault(require("./routes/analytics"));
+const embeds_1 = __importDefault(require("./routes/public/embeds"));
 // Validate environment variables
 (0, validateEnv_1.validateEnv)();
 const app = (0, express_1.default)();
@@ -40,6 +43,10 @@ app.use(rateLimit_1.apiLimiter);
 app.use(sanitization_1.sanitizeInputs);
 // CSRF protection (generate token for GET requests, validate for others)
 app.use((req, res, next) => {
+    // Skip CSRF protection for proxy routes (used by embeds)
+    if (req.path.startsWith('/api/proxy')) {
+        return next();
+    }
     if (req.method === 'GET') {
         (0, csrf_1.generateCsrfToken)(req, res, next);
     }
@@ -49,14 +56,18 @@ app.use((req, res, next) => {
 });
 // API Documentation
 app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec));
-// Routes
+// Public routes - no authentication required
+app.use('/api/public/embeds', embeds_1.default);
+// Protected routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/users', user_1.default);
 app.use('/api/teams', team_1.default);
+app.use('/api/teams', embed_1.default); // Register embed routes under /api/teams path
 app.use('/api/keys', apiKey_1.default);
-app.use('/api/teams', embed_1.default);
 app.use('/api/models', models_1.default);
 app.use('/api/chat', chat_1.default);
+app.use('/api/proxy', proxy_1.default);
+app.use('/api/analytics', analytics_1.default);
 // Error handling
 app.use(error_handler_1.errorHandler);
 exports.default = app;

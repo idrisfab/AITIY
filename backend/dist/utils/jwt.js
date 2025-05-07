@@ -10,9 +10,15 @@ const generateToken = (userId) => {
     if (!process.env.JWT_SECRET) {
         throw new errors_1.AppError('JWT_SECRET is not defined', 500);
     }
-    const options = {
-        expiresIn: process.env.JWT_EXPIRES_IN || '30d',
-    };
+    // Create a properly typed options object
+    const options = {};
+    // Set the expiresIn property with the correct type
+    if (process.env.JWT_EXPIRES_IN) {
+        options.expiresIn = process.env.JWT_EXPIRES_IN;
+    }
+    else {
+        options.expiresIn = '30d';
+    }
     return jsonwebtoken_1.default.sign({ userId }, process.env.JWT_SECRET, options);
 };
 exports.generateToken = generateToken;

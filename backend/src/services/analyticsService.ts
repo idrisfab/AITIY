@@ -272,7 +272,7 @@ export class AnalyticsService {
       const completionTokens = usage.reduce((sum, record) => sum + record.completionTokens, 0);
 
       const averageResponseTime = 0;
-      const commonTopics = [];
+      const commonTopics: string[] = [];
 
       // Upsert analytics record
       await prisma.chatAnalytics.upsert({
@@ -381,7 +381,7 @@ export class AnalyticsService {
       const completionTokens = usage.reduce((sum, record) => sum + record.completionTokens, 0);
 
       const averageResponseTime = 0;
-      const commonTopics = [];
+      const commonTopics: string[] = [];
 
       // Upsert analytics record
       await prisma.chatAnalytics.upsert({

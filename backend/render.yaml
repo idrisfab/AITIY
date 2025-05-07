@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: attiy-backend
+    env: node
+    buildCommand: npm install && npm run prisma:generate
+    startCommand: npm run deploy
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: attiy-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PERPLEXITY_API_KEY
+        sync: false
+      - key: MODEL
+        value: claude-3-7-sonnet-20250219
+      - key: PERPLEXITY_MODEL
+        value: sonar-pro
+      - key: MAX_TOKENS
+        value: 64000
+      - key: TEMPERATURE
+        value: 0.2
+      - key: CORS_ORIGIN
+        value: https://aitiy-fab.windsurf.build
+
+databases:
+  - name: attiy-db
+    databaseName: attiy
+    user: attiy_user
+    plan: free

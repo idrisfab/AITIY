@@ -732,7 +732,7 @@ router.get('/:id', async (req, res) => {
       'claude-3-haiku': { id: 'claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic', description: 'Fast responses with good capabilities', costPerToken: 0.0025 },
     };
     
-    const model = models[modelId];
+    const model = models[modelId as keyof typeof models];
     
     if (!model) {
       return res.status(404).json({ error: 'Model not found' });

@@ -211,8 +211,11 @@ router.post('/completions', rateLimit_1.chatCompletionLimiter, async (req, res, 
                     },
                     body: JSON.stringify({
                         model: modelName,
-                        messages: processedMessages,
-                        max_tokens: maxTokens || 1024,
+                        messages: processedMessages.map(msg => ({
+                            role: msg.role,
+                            content: msg.content
+                        })),
+                        max_tokens: maxTokens || 4000,
                         temperature
                     }),
                 });
@@ -235,26 +238,81 @@ router.post('/completions', rateLimit_1.chatCompletionLimiter, async (req, res, 
                     ]
                 };
             }
+            else if (apiKey.vendor === 'gemini') {
+                const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent';
+                // Transform messages to Gemini format
+                const geminiMessages = processedMessages.map(msg => ({
+                    role: msg.role === 'assistant' ? 'model' : msg.role,
+                    parts: [{ text: msg.content }]
+                }));
+                const response = await (0, node_fetch_1.default)(`${endpoint}?key=${decryptedKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: geminiMessages,
+                        generationConfig: {
+                            temperature,
+                            maxOutputTokens: maxTokens || 2048,
+                        }
+                    }),
+                });
+                apiResponse = await response.json();
+                if (!response.ok) {
+                    throw errors_1.AppError.apiIntegration(apiResponse.error?.message || `Gemini API error: ${response.status}`, response.status);
+                }
+                // Transform Gemini response to match OpenAI format for consistency
+                apiResponse = {
+                    id: apiResponse.usageMetadata?.requestId || `gemini-${Date.now()}`,
+                    choices: [
+                        {
+                            index: 0,
+                            message: {
+                                role: 'assistant',
+                                content: apiResponse.candidates[0].content.parts[0].text
+                            },
+                            finish_reason: apiResponse.candidates[0].finishReason || 'stop'
+                        }
+                    ]
+                };
+            }
+            else if (apiKey.vendor === 'grok') {
+                // xAI's Grok API is compatible with OpenAI's API
+                const endpoint = 'https://api.x.ai/v1/chat/completions';
+                const response = await (0, node_fetch_1.default)(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${decryptedKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: processedMessages,
+                        temperature,
+                        max_tokens: maxTokens,
+                        stream
+                    }),
+                });
+                apiResponse = await response.json();
+                if (!response.ok) {
+                    throw errors_1.AppError.apiIntegration(apiResponse.error?.message || `Grok API error: ${response.status}`, response.status);
+                }
+            }
             else {
                 throw errors_1.AppError.badRequest(`Unsupported API vendor: ${apiKey.vendor}`);
             }
-            // Store the assistant's response in chat history
-            try {
-                const assistantMessage = apiResponse.choices[0].message;
-                await db_1.prisma.chatMessage.create({
-                    data: {
-                        embedId,
-                        sessionId,
-                        role: assistantMessage.role,
-                        content: assistantMessage.content,
-                        tokenCount: assistantMessage.content.length // Simple approximation
-                    }
-                });
-            }
-            catch (error) {
-                logger.error('Failed to store assistant message', error);
-                // Continue processing even if message storage fails
-            }
+            // Store the assistant's response in the chat history
+            const assistantMessage = apiResponse.choices[0].message;
+            await db_1.prisma.chatMessage.create({
+                data: {
+                    embedId,
+                    sessionId,
+                    role: assistantMessage.role,
+                    content: assistantMessage.content,
+                    tokenCount: assistantMessage.content.length // Simple approximation
+                }
+            });
             // Record token usage
             try {
                 await db_1.prisma.chatUsage.create({

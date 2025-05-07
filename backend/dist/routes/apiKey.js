@@ -166,6 +166,55 @@ router.post('/validate', async (req, res) => {
                     error = err.message || 'Failed to validate API key';
                 }
                 break;
+            case 'gemini':
+                try {
+                    // Validate Google Gemini API key by making a simple request
+                    const response = await (0, node_fetch_1.default)(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                    parts: [{
+                                            text: 'Hello'
+                                        }]
+                                }],
+                            generationConfig: {
+                                maxOutputTokens: 1,
+                            }
+                        }),
+                    });
+                    const data = await response.json();
+                    isValid = response.ok;
+                    if (!isValid) {
+                        error = data.error?.message || 'Invalid Gemini API key';
+                    }
+                }
+                catch (err) {
+                    error = err.message || 'Failed to validate Gemini API key';
+                }
+                break;
+            case 'grok':
+                try {
+                    // xAI's Grok API is compatible with OpenAI's API
+                    const response = await (0, node_fetch_1.default)('https://api.x.ai/v1/models', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${key}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    const data = await response.json();
+                    isValid = response.ok;
+                    if (!isValid) {
+                        error = data.error?.message || 'Invalid Grok API key';
+                    }
+                }
+                catch (err) {
+                    error = err.message || 'Failed to validate Grok API key';
+                }
+                break;
             default:
                 error = 'Unsupported vendor';
         }

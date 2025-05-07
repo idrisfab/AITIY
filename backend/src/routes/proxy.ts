@@ -11,14 +11,38 @@ const router = express.Router();
  */
 router.post('/chat-completion', async (req, res) => {
   try {
+    // Track if we're using a fallback model due to quota limits
+    let usingFallback = false;
+    let fallbackReason = '';
     const { 
       apiKey, 
       modelName, 
       messages, 
-      vendor = 'openai',
+      vendor: requestedVendor = 'openai',
       temperature = 0.7,
       maxTokens
     } = req.body;
+    
+    // Determine the actual vendor based on the API key format
+    let vendor = requestedVendor;
+    
+    // Auto-detect vendor from API key format
+    if (apiKey) {
+      if (apiKey.startsWith('sk-ant-')) {
+        vendor = 'anthropic';
+      } else if (apiKey.startsWith('AIza')) {
+        vendor = 'gemini';
+      } else if (apiKey.startsWith('sk-')) {
+        vendor = 'openai';
+      }
+    }
+    
+    // Check if we have a fallback API key available in environment variables
+    const fallbackApiKey = process.env.FALLBACK_API_KEY;
+    const fallbackVendor = process.env.FALLBACK_VENDOR || 'anthropic';
+    const fallbackModel = process.env.FALLBACK_MODEL || 'claude-3-haiku-20240307';
+    
+    logger.debug(`Auto-detected vendor: ${vendor} based on API key format`);
 
     if (!apiKey) {
       throw AppError.badRequest('API key is required');
@@ -39,7 +63,8 @@ router.post('/chat-completion', async (req, res) => {
     logger.debug(`Proxying request to ${vendor} API`, {
       model: modelName,
       temperature,
-      maxTokens
+      maxTokens,
+      detectedVendor: vendor
     });
 
     // Handle different vendor APIs
@@ -128,7 +153,22 @@ router.post('/chat-completion', async (req, res) => {
         break;
 
       case 'gemini':
-        const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent';
+        // Normalize Gemini model name format
+        let geminiModelName = modelName;
+        
+        // If the model name is in the format 'gemini-1.5-pro', convert it to 'gemini-1.5-pro-latest'
+        if (modelName === 'gemini-1.5-pro') {
+          geminiModelName = 'gemini-1.5-pro-latest';
+        }
+        
+        // If the model doesn't include the full path, add it
+        if (!geminiModelName.includes('/')) {
+          geminiModelName = geminiModelName;
+        }
+        
+        logger.debug(`Using Gemini model: ${geminiModelName}`);
+        
+        const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + geminiModelName + ':generateContent';
         
         // Extract system message if present
         let geminiSystemPrompt = '';
@@ -232,14 +272,70 @@ router.post('/chat-completion', async (req, res) => {
 
     // Return the response
     return res.json(apiResponse);
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error in proxy chat completion:', error);
     
-    if (error instanceof AppError) {
-      return res.status(error.statusCode).json({ error: error.message });
+    // Check if this is a quota exceeded error and we have a fallback API key
+    const isQuotaError = error.statusCode === 429 || 
+                        (error.message && (
+                          error.message.includes('quota') || 
+                          error.message.includes('rate limit') ||
+                          error.message.includes('exceeded')
+                        ));
+    
+    const fallbackApiKey = process.env.FALLBACK_API_KEY;
+    const fallbackVendor = process.env.FALLBACK_VENDOR || 'anthropic';
+    const fallbackModel = process.env.FALLBACK_MODEL || 'claude-3-haiku-20240307';
+    
+    if (isQuotaError && fallbackApiKey) {
+      logger.warn(`API quota exceeded. Attempting fallback to ${fallbackVendor} model ${fallbackModel}`);
+      
+      try {
+        // Create a new request with the fallback configuration
+        const fallbackReq = {
+          body: {
+            apiKey: fallbackApiKey,
+            modelName: fallbackModel,
+            messages: req.body.messages,
+            vendor: fallbackVendor,
+            temperature: req.body.temperature,
+            maxTokens: req.body.maxTokens
+          }
+        };
+        
+        // Recursive call to the same handler with fallback configuration
+        const fallbackRes = {
+          status: (code: number) => ({
+            json: (data: any) => {
+              // Add a note about using fallback
+              if (data.choices && data.choices.length > 0) {
+                const fallbackNote = '\n\n[Note: This response was generated using a fallback model due to quota limits on the primary model.]';
+                data.choices[0].message.content += fallbackNote;
+                data.usingFallback = true;
+                data.fallbackReason = 'API quota exceeded';
+              }
+              res.status(code).json(data);
+            }
+          })
+        };
+        
+        // Process with fallback
+        await router.stack[0].handle(fallbackReq as any, fallbackRes as any, () => {});
+        return;
+      } catch (fallbackError: any) {
+        logger.error('Fallback also failed:', fallbackError);
+        // Continue to normal error handling if fallback fails
+      }
     }
     
-    return res.status(500).json({ error: 'Internal server error' });
+    // Return appropriate error response
+    const statusCode = error.statusCode || 500;
+    const message = error.message || 'Internal server error';
+    
+    res.status(statusCode).json({
+      status: 'error',
+      message
+    });
   }
 });
 

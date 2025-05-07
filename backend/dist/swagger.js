@@ -9,9 +9,9 @@ const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'ATTIY API Documentation',
+            title: 'AITIY API Documentation',
             version: '1.0.0',
-            description: 'API documentation for the ATTIY platform',
+            description: 'API documentation for the AITIY platform',
         },
         servers: [
             {

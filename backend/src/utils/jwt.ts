@@ -6,9 +6,15 @@ export const generateToken = (userId: string): string => {
     throw new AppError('JWT_SECRET is not defined', 500);
   }
 
-  const options: SignOptions = {
-    expiresIn: process.env.JWT_EXPIRES_IN || '30d' as string | number,
-  };
+  // Create a properly typed options object
+  const options: SignOptions = {};
+  
+  // Set the expiresIn property with the correct type
+  if (process.env.JWT_EXPIRES_IN) {
+    options.expiresIn = process.env.JWT_EXPIRES_IN;
+  } else {
+    options.expiresIn = '30d';
+  }
 
   return jwt.sign({ userId }, process.env.JWT_SECRET, options);
 };
