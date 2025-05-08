@@ -1,13 +1,17 @@
 [build]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_VERSION = "9"
+  NEXT_DISABLE_SOURCEMAPS = "true"
+  NEXT_PUBLIC_API_URL = "https://attiy-backend.onrender.com"
+  NEXT_PUBLIC_APP_URL = "https://aitiy-fab.netlify.app"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Disable Next.js plugin since we're using export mode
+# [[plugins]]
+#   package = "@netlify/plugin-nextjs"
 
 [[redirects]]
   from = "/*"
