@@ -31,6 +31,8 @@ services:
         value: 0.2
       - key: CORS_ORIGIN
         value: https://aitiy-fab.windsurf.build
+      - key: BUILD_COMMAND
+        value: npm install && npx prisma migrate deploy
 
 databases: 
   - name: attiy-db
