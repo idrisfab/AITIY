@@ -21,6 +21,7 @@ const csrfExemptPaths = [
   '/api/auth/register',     // Exempt registration
   '/api/chat/completions',  // Public API for chat completions
   '/api/chat/embed',        // Public API for getting embed config
+  '/api/public/embeds',     // Public embeds API endpoints
 ];
 
 /**

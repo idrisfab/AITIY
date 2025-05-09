@@ -82,10 +82,10 @@ router.get('/:embedId', async (req, res, next) => {
 router.post('/:embedId/chat', async (req, res, next) => {
   try {
     const { embedId } = req.params;
-    const { message, sessionId } = req.body;
+    const { messages, sessionId } = req.body;
     
-    if (!message) {
-      throw AppError.badRequest('Message is required');
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw AppError.badRequest('Valid messages array is required');
     }
     
     // Check if embed exists and is active
@@ -107,17 +107,69 @@ router.post('/:embedId/chat', async (req, res, next) => {
       throw AppError.notFound('Embed not found or not active');
     }
     
-    // In a real implementation, this would:
-    // 1. Process the message using the appropriate AI model
-    // 2. Store the conversation history
-    // 3. Return the AI response
+    // Get the API key for this embed
+    let apiKeyValue = null;
+    let apiKeyVendor = null;
     
-    // For now, just return a placeholder response
+    if (embed.apiKeyId) {
+      const apiKey = await prisma.apiKey.findUnique({
+        where: { id: embed.apiKeyId },
+        select: {
+          key: true,
+          vendor: true
+        }
+      });
+      
+      if (apiKey) {
+        // Decrypt the API key
+        try {
+          apiKeyValue = decryptApiKey(apiKey.key);
+          apiKeyVendor = apiKey.vendor;
+        } catch (decryptError) {
+          logger.error(`Error decrypting API key for embed ${embedId}:`, decryptError);
+          throw AppError.internal('Error processing API key');
+        }
+      }
+    }
+    
+    if (!apiKeyValue) {
+      throw AppError.badRequest('No valid API key configured for this embed');
+    }
+    
+    // Messages have already been extracted and validated above
+    
+    // Log the incoming request
+    logger.debug(`Processing chat request for embed ${embedId} with ${messages.length} messages`);
+    
+    // Extract the last user message for context
+    const lastUserMessage = messages.length > 0 ? messages[messages.length - 1].content : '';
+    
+    // In a production environment, this would call the actual AI service with the API key
+    // For now, return a contextual response based on the user's message
+    let responseContent = `I received your message. This is a simulated response from the ${embed.modelName} model.`;
+    
+    // Add some context based on the user's message
+    if (lastUserMessage) {
+      if (lastUserMessage.toLowerCase().includes('hello') || lastUserMessage.toLowerCase().includes('hi')) {
+        responseContent = `Hello! I'm here to help. This is a simulated response from the ${embed.modelName} model.`;
+      } else if (lastUserMessage.toLowerCase().includes('help')) {
+        responseContent = `I'd be happy to help with that. This is a simulated response from the ${embed.modelName} model.`;
+      } else if (lastUserMessage.toLowerCase().includes('thank')) {
+        responseContent = `You're welcome! Let me know if you need anything else. This is a simulated response from the ${embed.modelName} model.`;
+      }
+    }
+    
+    // Return the response in the format expected by the frontend
     res.json({
       id: 'msg_' + Date.now(),
-      content: 'This is a placeholder response. The actual implementation would process your message using the configured AI model.',
-      role: 'assistant',
-      createdAt: new Date().toISOString()
+      choices: [{
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: responseContent
+        },
+        finish_reason: 'stop'
+      }]
     });
     
   } catch (error) {

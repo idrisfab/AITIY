@@ -11,14 +11,21 @@ export function generateStaticParams() {
   ];
 }
 
-// Placeholder function to get the embed from a data source
-// In a real implementation, this would fetch from a database
+// Function to get the embed from a data source
+// Uses live API in production and mock data in development if configured
 async function getEmbedFromDataSource(embedId: string) {
   try {
-    // For testing purposes, return mock data if the embedId matches one of our test IDs
-    // This should be replaced with actual database calls in production
-    if (embedId === 'e0559171-461f-4831-b940-9ac73d30cf11' || 
-        embedId === '8b886242-0d33-424e-856f-e9777a77c127') {
+    // Check if we should use mock data (for development/testing)
+    // In Next.js, we need to explicitly check for the string 'true' since env vars are always strings
+    const useMockData = process.env.USE_MOCK_DATA === 'true';
+    
+    console.log('USE_MOCK_DATA env var:', process.env.USE_MOCK_DATA);
+    console.log('Using mock data?', useMockData);
+    
+    // Only use mock data if explicitly enabled via environment variable
+    if (useMockData && (embedId === 'e0559171-461f-4831-b940-9ac73d30cf11' || 
+        embedId === '8b886242-0d33-424e-856f-e9777a77c127')) {
+      console.log('Using mock data for embed:', embedId);
       return {
         id: embedId,
         name: 'Test Embed',
@@ -42,8 +49,25 @@ async function getEmbedFromDataSource(embedId: string) {
       };
     }
 
-    // For other embed IDs, we can implement actual database calls here
-    return null;
+    // For all other cases, fetch from the actual API
+    const apiUrl = process.env.API_BASE_URL || 'http://localhost:3001/api';
+    console.log('Fetching embed data from API for:', embedId);
+    console.log('API URL:', apiUrl);
+    
+    // Use the public embeds endpoint as seen in the logs
+    const response = await fetch(`${apiUrl}/public/embeds/${embedId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching embed data:', error);
     return null;

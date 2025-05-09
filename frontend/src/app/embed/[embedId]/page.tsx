@@ -3,6 +3,7 @@
 import { ChatWidget } from '@/components/ChatWidget';
 import { fetchPublicEmbed } from '@/lib/api';
 import { useState, useEffect } from 'react';
+import { useEmbed } from '@/providers/EmbedProvider';
 import type { ChatEmbedConfig } from '@/types/embed';
 
 interface EmbedPageProps {
@@ -15,6 +16,14 @@ export default function EmbedPage({ params }: EmbedPageProps) {
   const [embed, setEmbed] = useState<ChatEmbedConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Use our EmbedProvider context
+  const { isEmbedMode } = useEmbed();
+  
+  // Log to confirm we're in embed mode
+  useEffect(() => {
+    console.log('Embed page loaded in embed mode:', isEmbedMode);
+  }, [isEmbedMode]);
 
   useEffect(() => {
     async function loadEmbed() {
@@ -64,12 +73,14 @@ export default function EmbedPage({ params }: EmbedPageProps) {
 
   return (
     <div className={`${isInIframe ? 'h-full' : 'h-screen'} bg-background`}>
-      <ChatWidget
-        embed={embed}
-        mode="embed"
-        useRealApi={!!embed.apiKeyId} // Enable real API if we have an API key ID
-        apiKey={embed.apiKeyId} // Pass the API key ID to the ChatWidget
-      />
+      {embed && (
+        <ChatWidget
+          embed={embed}
+          mode="embed"
+          useRealApi={!!embed.apiKeyId} // Enable real API if we have an API key ID
+          apiKey={embed.apiKeyId} // Pass the API key ID to the ChatWidget
+        />
+      )}
     </div>
   );
 } 

@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Use export mode for Netlify deployment
-  output: 'export',
+  // Static export disabled to allow middleware to function
+  // output: 'export',
   // Configure images for static export
   images: {
     domains: ['localhost'],
@@ -18,6 +18,11 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  // Make environment variables available to the server-side
+  env: {
+    USE_MOCK_DATA: process.env.USE_MOCK_DATA || 'false',
+    API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:3001/api',
   },
 };
 

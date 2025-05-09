@@ -22,6 +22,25 @@ export function ChatWidget({
   apiKey,
   useRealApi = false
 }: ChatWidgetProps) {
+  // Extract embedId from the URL when in embed mode
+  const [extractedEmbedId, setExtractedEmbedId] = useState<string>('');
+  
+  // Extract embedId from URL on component mount
+  useEffect(() => {
+    if (mode === 'embed' && typeof window !== 'undefined') {
+      // Extract embedId from URL path
+      const pathParts = window.location.pathname.split('/');
+      const idFromPath = pathParts[pathParts.length - 1];
+      
+      if (idFromPath && idFromPath !== '') {
+        console.log('Extracted embedId from URL:', idFromPath);
+        setExtractedEmbedId(idFromPath);
+      } else if (embed?.id) {
+        console.log('Using embed.id as embedId:', embed.id);
+        setExtractedEmbedId(embed.id);
+      }
+    }
+  }, [mode, embed?.id]);
   // Function to format chat messages as plain text
   const formatChatAsText = () => {
     return messages.map(msg => {
@@ -266,31 +285,36 @@ export function ChatWidget({
   const sendMessage = async () => {
     if (!inputValue.trim() || isSending) return;
     
+    // Force enable auto-scrolling when user sends a message
+    setShouldAutoScroll(true);
+    setIsUserScrolling(false);
+    
     // Add user message
     const userMessage: Message = { 
       role: 'user', 
       content: inputValue.trim(),
       timestamp: new Date()
     };
-    
-    // Force enable auto-scrolling when user sends a message
-    setShouldAutoScroll(true);
-    setIsUserScrolling(false);
-    
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsSending(true);
+    setIsTyping(true);
     
     // Reset textarea height
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
     }
     
-    // Start typing indicator
-    setIsTyping(true);
-    
     try {
-      if (useRealApi && apiKey) {
+      // For embed mode, we always use the real API
+      // For other modes, we use the real API only if useRealApi is true
+      const isEmbed = mode === 'embed';
+      const hasEmbedId = !!(extractedEmbedId || embed.id);
+      const shouldUseRealApi = isEmbed || (useRealApi && apiKey);
+      
+      if (shouldUseRealApi) {
+        console.log('Using real API for', isEmbed ? 'embed' : 'direct', 'mode with embedId:', extractedEmbedId || embed.id);
+        
         // Build conversation history with system prompt
         const conversationHistory: Message[] = [];
         
@@ -306,12 +330,20 @@ export function ChatWidget({
           
         conversationHistory.push(...chatHistory, userMessage);
         
-        // Make API call using the embed's model
+        // Make API call using the embed's model and pass the embedId
+        // Use the extractedEmbedId from URL if available, otherwise fall back to embed.id
+        // Ensure we always have a string for embedId (not undefined)
+        const embId = extractedEmbedId || embed.id || '';
+        console.log('Using embedId for API call:', embId);
+        
+        // For embed mode, we don't need to pass the apiKey as it will be retrieved on the server side
+        // based on the embedId. For direct mode, we need to pass the apiKey.
         const response = await sendDirectChatCompletionRequest({
-          apiKey,
+          ...(mode !== 'embed' && apiKey ? { apiKey } : {}), // Only include apiKey for non-embed mode
           modelName,
           messages: conversationHistory.map(({ role, content }) => ({ role, content })),
-          vendor: modelVendor as any
+          vendor: modelVendor as any,
+          embedId: embId // Pass the embedId to use the public embed endpoint
         });
         
         // Extract assistant's response
@@ -327,10 +359,11 @@ export function ChatWidget({
           throw new Error('Unexpected response format from API');
         }
       } else {
-        // Simulate AI response
+        // Simulate AI response for mock/preview mode
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        let response = '';
+        // For mock responses in preview mode
+        let mockResponse = '';
         
         // Generate a contextual response considering the system prompt
         const userText = userMessage.content.toLowerCase();
@@ -338,14 +371,14 @@ export function ChatWidget({
         // Check for system prompt context first
         if (systemPrompt.toLowerCase().includes('technical support') && 
            (userText.includes('error') || userText.includes('problem') || userText.includes('issue'))) {
-          response = 'I see you\'re having a technical issue. Could you please provide more details about what you\'re experiencing?';
+          mockResponse = 'I see you\'re having a technical issue. Could you please provide more details about what you\'re experiencing?';
         } else if (systemPrompt.toLowerCase().includes('sales') && 
                   (userText.includes('price') || userText.includes('cost') || userText.includes('buy'))) {
-          response = 'Thank you for your interest in our products! I\'d be happy to provide pricing information or connect you with our sales team.';
+          mockResponse = 'Thank you for your interest in our products! I\'d be happy to provide pricing information or connect you with our sales team.';
         } else if (systemPrompt.toLowerCase().includes('friendly') || systemPrompt.toLowerCase().includes('casual')) {
           // More casual tone for friendly prompts
           if (userText.includes('hello') || userText.includes('hi') || userText.includes('hey')) {
-            response = 'Hey there! How can I help you today? 😊';
+            mockResponse = 'Hey there! How can I help you today? 😊';
           } else {
             const casualResponses = [
               'Great question! Let me help with that.',
@@ -354,22 +387,22 @@ export function ChatWidget({
               'Absolutely! I can definitely help with that.',
               'Great point! Let me share some thoughts on that.'
             ];
-            response = casualResponses[Math.floor(Math.random() * casualResponses.length)];
+            mockResponse = casualResponses[Math.floor(Math.random() * casualResponses.length)];
           }
         } else {
           // Default responses if no specific system prompt match
           if (userText.includes('hello') || userText.includes('hi') || userText.includes('hey')) {
-            response = 'Hello there! How can I assist you today?';
+            mockResponse = 'Hello there! How can I assist you today?';
           } else if (userText.includes('help')) {
-            response = 'I\'d be happy to help! What do you need assistance with?';
+            mockResponse = 'I\'d be happy to help! What do you need assistance with?';
           } else if (userText.includes('thank')) {
-            response = 'You\'re welcome! Is there anything else I can help with?';
+            mockResponse = 'You\'re welcome! Is there anything else I can help with?';
           } else if (userText.includes('bye') || userText.includes('goodbye')) {
-            response = 'Goodbye! Feel free to reach out if you have more questions.';
+            mockResponse = 'Goodbye! Feel free to reach out if you have more questions.';
           } else if (userText.includes('what') && userText.includes('do')) {
-            response = 'I\'m an AI assistant designed to provide helpful information and answer your questions.';
+            mockResponse = 'I\'m an AI assistant designed to provide helpful information and answer your questions.';
           } else if (userText.includes('who') && userText.includes('you')) {
-            response = 'I\'m an AI assistant created to help answer your questions and provide assistance.';
+            mockResponse = 'I\'m an AI assistant created to help answer your questions and provide assistance.';
           } else {
             // Fallback responses
             const fallbacks = [
@@ -379,13 +412,13 @@ export function ChatWidget({
               'I see what you mean. Could you elaborate a bit more?',
               'I\'m here to help with questions like that. What specific information are you looking for?'
             ];
-            response = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            mockResponse = fallbacks[Math.floor(Math.random() * fallbacks.length)];
           }
         }
         
         const assistantMessage: Message = { 
           role: 'assistant', 
-          content: response,
+          content: mockResponse,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, assistantMessage]);
