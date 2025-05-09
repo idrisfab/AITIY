@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server';
 
+// This function is required for static site generation with output: 'export'
+// It pre-generates all possible paths for this dynamic route
+export function generateStaticParams() {
+  // Return an array of objects with the embedId values that should be pre-rendered
+  // These should match the IDs used in your mock data or actual database
+  return [
+    { embedId: 'e0559171-461f-4831-b940-9ac73d30cf11' },
+    { embedId: '8b886242-0d33-424e-856f-e9777a77c127' }
+  ];
+}
+
 // Placeholder function to get the embed from a data source
 // In a real implementation, this would fetch from a database
 async function getEmbedFromDataSource(embedId: string) {
