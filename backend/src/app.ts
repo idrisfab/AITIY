@@ -27,9 +27,28 @@ validateEnv();
 const app = express();
 
 // Basic middleware
+// Configure CORS to allow requests from multiple frontend domains
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true, // Important for cookies
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Define allowed origins
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:3000',  // Primary frontend URL
+      process.env.ADDITIONAL_FRONTEND_URL,                  // Additional production frontend URL
+      'http://localhost:3000',                             // Local development
+      'http://localhost:8000'                              // Alternative local port
+    ].filter(Boolean); // Filter out undefined/null values
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      console.warn(`Origin ${origin} not allowed by CORS`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Important for cookies and authentication
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token', 'X-XSRF-TOKEN']
 }));

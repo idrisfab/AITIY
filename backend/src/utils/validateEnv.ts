@@ -13,6 +13,7 @@ const envSchema = z.object({
   SMTP_FROM: z.string().optional(),
   SMTP_SECURE: z.string().default('false'),
   FRONTEND_URL: z.string().default('http://localhost:3000'),
+  ADDITIONAL_FRONTEND_URL: z.string().optional(), // Optional additional frontend URL for multi-server deployment
 });
 
 export const validateEnv = (): void => {
