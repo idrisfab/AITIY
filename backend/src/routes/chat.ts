@@ -125,7 +125,7 @@ router.post('/completions', chatCompletionLimiter, async (req, res, next) => {
     }
 
     // Apply any system prompt from embed config if not already present
-    const processedMessages = [...messages];
+    const processedMessages = [...messages].map(m => ({ role: m.role, content: m.content }));
     if (embed.systemPrompt && !messages.some(m => m.role === 'system')) {
       processedMessages.unshift({
         role: 'system',

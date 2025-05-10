@@ -14,6 +14,8 @@ const generateToken = (userId) => {
     const options = {};
     // Set the expiresIn property with the correct type
     if (process.env.JWT_EXPIRES_IN) {
+        // The expiresIn value can be a string like '1h', '2d', or a number in seconds
+        // Use type assertion to tell TypeScript this string is compatible with the expected type
         options.expiresIn = process.env.JWT_EXPIRES_IN;
     }
     else {
