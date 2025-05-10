@@ -32,9 +32,12 @@ services:
       # Add other environment variables as needed
     ports:
       - '3001:3001'
+    # Modified volume mapping to prevent overriding prisma files
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - ./backend/src:/app/src
+      - ./backend/dist:/app/dist
+      - ./backend/.env:/app/.env
+      # Exclude node_modules and prisma directories from volume mapping
     networks:
       - app-network
 
