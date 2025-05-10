@@ -12,7 +12,36 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: attiy-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/ai_embed_platform
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - ADDITIONAL_FRONTEND_URL=${ADDITIONAL_FRONTEND_URL:-}
+      # Add other environment variables as needed
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
     name: postgres_data
+
+networks:
+  app-network:
+    driver: bridge

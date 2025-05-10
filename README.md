@@ -407,3 +407,46 @@ Website: https://idro.co.uk
 ---
 
 *This documentation was last updated on May 5, 2025.*
+
+
+
+
+Now you have everything set up to deploy your backend server using Docker Compose! This approach follows the dev workflow guidelines from your rules and provides a consistent environment for your database and backend.
+
+How to Use This Setup
+Deploy to your server:
+bash
+CopyInsert
+# Clone your repository on the server
+git clone https://github.com/yourusername/ATTIY.git
+cd ATTIY
+
+# Set environment variables for your frontend URL(s)
+export FRONTEND_URL=https://your-frontend-domain.com
+export ADDITIONAL_FRONTEND_URL=https://your-other-frontend.com  # Optional
+
+# Start the services
+docker-compose up -d
+Run database migrations:
+bash
+CopyInsert
+# Connect to the backend container
+docker exec -it attiy-backend sh
+
+# Run Prisma migrations
+npx prisma migrate deploy
+
+# Optionally seed the database
+npx prisma db seed
+Benefits of This Approach
+Isolated Services: Your PostgreSQL database and Node.js backend run in separate containers but can communicate over the app-network.
+Environment Variables: The Docker Compose file is set up to use environment variables from your host machine, making it easy to configure for different environments.
+Persistent Data: The PostgreSQL data is stored in a named volume, ensuring your data persists between container restarts.
+Easy Scaling: You can easily scale your backend service horizontally if needed.
+Simplified Deployment: One command (docker-compose up -d) to start your entire backend stack.
+Next Steps
+Set up a reverse proxy (like Nginx) if you want to add HTTPS or route multiple services through a single domain.
+Configure backups for your PostgreSQL volume to prevent data loss.
+Set up monitoring using tools like Prometheus and Grafana to keep track of your services.
+Implement CI/CD to automatically build and deploy your Docker images when you push changes to your repository.
+This setup gives you the flexibility to deploy your backend separately from your frontend while maintaining a consistent environment for your database.
