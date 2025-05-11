@@ -4,7 +4,8 @@ import Cookies from 'js-cookie';
 import type { ModelInfo } from '@/types/models';
 import type { AnalyticsData } from '@/types/analytics';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Use relative URLs to leverage the nginx proxy
+const API_BASE_URL = '/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('token') || Cookies.get('token');

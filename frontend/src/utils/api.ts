@@ -2,7 +2,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { VendorId } from './vendors';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Use relative URLs to leverage the nginx proxy
+const API_URL = '/api';
 
 interface ApiKey {
   id: string;

@@ -6,7 +6,7 @@
   NODE_VERSION = "18"
   NPM_VERSION = "9"
   NEXT_DISABLE_SOURCEMAPS = "true"
-  NEXT_PUBLIC_API_URL = "https://attiy-backend.onrender.com"
+  NEXT_PUBLIC_API_URL = "https://iq.idro.co.uk"
   NEXT_PUBLIC_APP_URL = "https://aitiy-fab.netlify.app"
 
 # Disable Next.js plugin since we're using export mode

@@ -33,8 +33,8 @@ async function fetchTeams(): Promise<Team[]> {
   }
 
   try {
-    // Use the correct API URL with the backend port (3001)
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    // Use relative URLs to leverage the nginx proxy
+    const apiUrl = '/api';
     console.log('Using API URL:', apiUrl);
     
     const response = await fetch(`${apiUrl}/teams`, {

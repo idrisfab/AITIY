@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Use relative URLs to leverage the nginx proxy
+const API_BASE_URL = '/api';
 
 function getHeaders() {
   const token = typeof window !== 'undefined' ? 
