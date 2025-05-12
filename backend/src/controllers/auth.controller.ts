@@ -39,6 +39,19 @@ export const register = async (
         name: true,
       },
     });
+    
+    // Create a default team for the user
+    const defaultTeam = await prisma.team.create({
+      data: {
+        name: `${name || email.split('@')[0]}'s Team`,
+        members: {
+          create: {
+            userId: user.id,
+            role: 'OWNER',
+          },
+        },
+      },
+    });
 
     // Generate token
     const token = generateToken(user.id);

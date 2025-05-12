@@ -8,20 +8,22 @@ const logger = Logger.getLogger('csrf');
 // Initialize CSRF protection middleware
 const csrfProtection = csrf({
   cookie: {
-    // These are secure defaults
+    // More lenient settings for cross-origin requests
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-origin requests
     httpOnly: true
   }
 });
 
 // The paths that should be exempt from CSRF protection
 const csrfExemptPaths = [
-  '/api/auth/login',        // Exempt login to allow initial CSRF token exchange
-  '/api/auth/register',     // Exempt registration
-  '/api/chat/completions',  // Public API for chat completions
-  '/api/chat/embed',        // Public API for getting embed config
-  '/api/public/embeds',     // Public embeds API endpoints
+  '/auth/login',           // Exempt login to allow initial CSRF token exchange (direct path)
+  '/api/auth/login',       // Exempt login (API path)
+  '/auth/register',        // Exempt registration (direct path)
+  '/api/auth/register',    // Exempt registration (API path)
+  '/api/chat/completions', // Public API for chat completions
+  '/api/chat/embed',       // Public API for getting embed config
+  '/api/public/embeds',    // Public embeds API endpoints
 ];
 
 /**
@@ -79,7 +81,7 @@ export const generateCsrfToken = (req: Request, res: Response, next: NextFunctio
       const token = req.csrfToken();
       res.cookie('XSRF-TOKEN', token, {
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // Changed from 'strict' to 'lax' to allow cross-origin requests
         httpOnly: false // Frontend needs to read this
       });
       

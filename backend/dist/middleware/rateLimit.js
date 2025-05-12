@@ -13,6 +13,7 @@ exports.apiLimiter = (0, express_rate_limit_1.default)({
         status: 'error',
         message: 'Too many requests from this IP, please try again later.',
     },
+    // Skip trust proxy configuration as it's set globally in app.ts
     handler: (req, res, next, options) => {
         next(new errors_1.AppError('Too many requests, please try again later', 429));
     },
@@ -26,6 +27,7 @@ exports.authLimiter = (0, express_rate_limit_1.default)({
         status: 'error',
         message: 'Too many attempts, please try again after an hour',
     },
+    // Skip trust proxy configuration as it's set globally in app.ts
     handler: (req, res, next, options) => {
         next(new errors_1.AppError('Too many attempts, please try again after an hour', 429));
     },
@@ -40,6 +42,7 @@ exports.chatCompletionLimiter = (0, express_rate_limit_1.default)({
         status: 'error',
         message: 'Too many chat requests, please slow down.',
     },
+    // Skip trust proxy configuration as it's set globally in app.ts
     handler: (req, res, next, options) => {
         next(new errors_1.AppError('Too many chat requests, please slow down.', 429));
     },

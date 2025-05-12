@@ -8,6 +8,7 @@ export const apiLimiter = rateLimit({
     status: 'error',
     message: 'Too many requests from this IP, please try again later.',
   },
+  // Skip trust proxy configuration as it's set globally in app.ts
   handler: (req, res, next, options) => {
     next(new AppError('Too many requests, please try again later', 429));
   },
@@ -22,6 +23,7 @@ export const authLimiter = rateLimit({
     status: 'error',
     message: 'Too many attempts, please try again after an hour',
   },
+  // Skip trust proxy configuration as it's set globally in app.ts
   handler: (req, res, next, options) => {
     next(new AppError('Too many attempts, please try again after an hour', 429));
   },
@@ -37,6 +39,7 @@ export const chatCompletionLimiter = rateLimit({
     status: 'error',
     message: 'Too many chat requests, please slow down.',
   },
+  // Skip trust proxy configuration as it's set globally in app.ts
   handler: (req, res, next, options) => {
     next(new AppError('Too many chat requests, please slow down.', 429));
   },

@@ -60,7 +60,20 @@ export function DashboardNav() {
     }
   };
 
-  const navigationItems = currentTeam ? getNavigationItems(currentTeam.id) : [];
+  // Always show navigation items, using a fallback team ID if no team is available
+  const fallbackTeamId = 'default';
+  const navigationItems = currentTeam ? getNavigationItems(currentTeam.id) : getNavigationItems(fallbackTeamId);
+  
+  // Force navigation to be visible for debugging
+  useEffect(() => {
+    console.log('Navigation rendering state:', {
+      currentTeam,
+      navigationItems,
+      teams,
+      teamsLength: teams.length,
+      user
+    });
+  }, [currentTeam, navigationItems, teams, user]);
   console.log('Navigation rendering:', {
     currentTeam,
     navigationItems,

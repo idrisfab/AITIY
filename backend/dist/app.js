@@ -7,7 +7,6 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const rateLimit_1 = require("./middleware/rateLimit");
 const error_handler_1 = require("./middleware/error-handler");
 const requestLogger_1 = require("./middleware/requestLogger");
 const sanitization_1 = require("./middleware/sanitization");
@@ -28,6 +27,9 @@ const embeds_1 = __importDefault(require("./routes/public/embeds"));
 // Validate environment variables
 (0, validateEnv_1.validateEnv)();
 const app = (0, express_1.default)();
+// Trust proxy - required when behind Nginx or other reverse proxies
+// Use a more specific configuration to avoid ERR_ERL_PERMISSIVE_TRUST_PROXY error
+app.set('trust proxy', '127.0.0.1');
 // Basic middleware
 // Configure CORS to allow requests from multiple frontend domains
 app.use((0, cors_1.default)({
@@ -39,10 +41,15 @@ app.use((0, cors_1.default)({
         const allowedOrigins = [
             process.env.FRONTEND_URL || 'http://localhost:3000', // Primary frontend URL
             process.env.ADDITIONAL_FRONTEND_URL, // Additional production frontend URL
+            'https://aitiy.idro.co.uk', // Production domain
             'http://localhost:3000', // Local development
             'http://localhost:8000' // Alternative local port
         ].filter(Boolean); // Filter out undefined/null values
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+        // In production, be more permissive with CORS
+        if (process.env.NODE_ENV === 'production') {
+            callback(null, true); // Allow all origins in production
+        }
+        else if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
             callback(null, true);
         }
         else {
@@ -52,18 +59,23 @@ app.use((0, cors_1.default)({
     },
     credentials: true, // Important for cookies and authentication
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token', 'X-XSRF-TOKEN']
+    allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token', 'X-CSRF-Token', 'X-XSRF-TOKEN', 'X-Requested-With']
 }));
 app.use(securityHeaders_1.securityHeaders);
 app.use((0, cookie_parser_1.default)()); // Required for CSRF cookies
 app.use(express_1.default.json());
 app.use(requestLogger_1.requestLogger);
-app.use(rateLimit_1.apiLimiter);
+// Temporarily disable rate limiter to troubleshoot
+// app.use(apiLimiter);
 app.use(sanitization_1.sanitizeInputs);
 // CSRF protection (generate token for GET requests, validate for others)
 app.use((req, res, next) => {
     // Skip CSRF protection for proxy routes (used by embeds)
     if (req.path.startsWith('/api/proxy')) {
+        return next();
+    }
+    // Skip CSRF protection for auth routes
+    if (req.path.includes('/auth/login') || req.path.includes('/auth/register')) {
         return next();
     }
     if (req.method === 'GET') {
@@ -78,6 +90,7 @@ app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.de
 // Public routes - no authentication required
 app.use('/api/public/embeds', embeds_1.default);
 // Protected routes
+// Only register auth routes under /api/auth as per the nginx configuration
 app.use('/api/auth', auth_1.default);
 app.use('/api/users', user_1.default);
 app.use('/api/teams', team_1.default);

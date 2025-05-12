@@ -35,6 +35,18 @@ const register = async (req, res, next) => {
                 name: true,
             },
         });
+        // Create a default team for the user
+        const defaultTeam = await db_1.prisma.team.create({
+            data: {
+                name: `${name || email.split('@')[0]}'s Team`,
+                members: {
+                    create: {
+                        userId: user.id,
+                        role: 'OWNER',
+                    },
+                },
+            },
+        });
         // Generate token
         const token = (0, jwt_1.generateToken)(user.id);
         res.status(201).json({
