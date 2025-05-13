@@ -230,8 +230,8 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <div className="py-6 px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center sm:justify-between">
+    <div className="flex flex-col items-center justify-center min-h-screen py-6 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-3xl">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             API Keys
