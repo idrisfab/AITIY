@@ -21,8 +21,8 @@ export default function Home() {
                   <span className="block text-indigo-200">AI Chat Widgets for Your Website</span>
                 </h1>
                 <p className="mt-6 max-w-lg mx-auto text-center text-xl text-indigo-200 sm:max-w-3xl">
-                  Create customizable AI chat widgets that seamlessly integrate with your website.
-                  Enhance user engagement and provide instant support with our powerful platform.
+                  Create customisable AI chat widgets that seamlessly integrate with your website or app.
+                  Enhance user engagement, provide instant support, provide instand feedback on learning experiences all with our powerful platform.
                 </p>
                 <div className="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
                   <div className="space-y-4 sm:space-y-0 sm:space-x-4">
@@ -55,11 +55,11 @@ export default function Home() {
                 Features
               </h2>
               <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Everything you need to build AI chat experiences
+                Everything you need to build AI chat experiences, <i>hassle free.</i>
               </p>
               <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
                 Our platform provides all the tools and features you need to create,
-                customize, and manage AI chat widgets for your website.
+                customise and manage AI chat experiences for your website or app
               </p>
             </div>
 
@@ -87,7 +87,7 @@ export default function Home() {
                   </div>
                   <h3 className="mt-6 text-xl font-medium text-gray-900">Customizable Design</h3>
                   <p className="mt-2 text-base text-gray-500 text-center">
-                    Customize the look and feel to match your brand identity.
+                    Customise the look and feel to match your brand identity.
                   </p>
                 </div>
 
@@ -122,7 +122,7 @@ export default function Home() {
           </div>
           <div className="mt-8 md:mt-0 md:order-1">
             <p className="text-center text-base text-gray-400">
-              &copy; 2025 AITIY by Fab Soft. All rights reserved.
+              &copy; 2025 AITIY by Fab Soft - Idris Fabiyi. All rights reserved.
             </p>
           </div>
         </div>

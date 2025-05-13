@@ -6,10 +6,10 @@ import { PageHeader } from '@/components/PageHeader';
 
 export default function EmbedsPage({ params }: { params: { teamId: string } }) {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-2">
       <PageHeader
         title="Chat Embeds"
-        description="Create and manage chat widgets for your websites"
+        description="Create and manage chat experiences for your websites"
         action={<CreateEmbedButton teamId={params.teamId} />}
       />
       <div className="mt-8">
