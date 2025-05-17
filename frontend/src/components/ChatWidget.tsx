@@ -204,7 +204,10 @@ export function ChatWidget({
   useEffect(() => {
     if (inputRef.current && mode === 'embed') {
       setTimeout(() => {
-        inputRef.current?.focus();
+        // Focus without scrolling the parent page
+        if (inputRef.current) {
+          inputRef.current.focus({preventScroll: true});
+        }
       }, 500);
     }
   }, [mode]);
@@ -251,8 +254,14 @@ export function ChatWidget({
     if ((shouldAutoScroll && (isNearBottom || isUserMessage)) || isSending) {
       // Delay scrolling slightly to ensure DOM has updated
       setTimeout(() => {
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (messagesEndRef.current && messageContainerRef.current) {
+          // Use the container's scrollTo method instead of scrollIntoView
+          // This ensures scrolling happens only within the container
+          const container = messageContainerRef.current;
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+          });
         }
       }, 100);
     }
@@ -441,9 +450,9 @@ export function ChatWidget({
       setIsTyping(false);
       setIsSending(false);
       
-      // Focus on input after response
+      // Focus on input after response without scrolling parent page
       setTimeout(() => {
-        inputRef.current?.focus();
+        inputRef.current?.focus({preventScroll: true});
       }, 100);
     }
   };
@@ -451,7 +460,9 @@ export function ChatWidget({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation(); // Stop event from bubbling up to parent window
       sendMessage();
+      return false; // Ensure no further handling
     }
   };
   
@@ -568,7 +579,7 @@ export function ChatWidget({
       <div 
         ref={messageContainerRef}
         className={`flex-1 overflow-y-auto p-4 ${isDark ? 'bg-gray-900' : 'bg-white'}`}
-        style={{ scrollBehavior: 'smooth' }}
+        style={{ scrollBehavior: 'smooth', overscrollBehavior: 'contain' }}
         onScroll={handleScroll}
       >
         {messages.map((message, index) => (
@@ -656,7 +667,7 @@ export function ChatWidget({
         
         {/* Subtle branding message */}
         <div className="text-[10px] text-center mt-2 opacity-50">
-          Powered by ATTIY
+          Powered by AITIY
         </div>
       </div>
     </div>
