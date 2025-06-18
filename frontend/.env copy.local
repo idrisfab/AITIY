@@ -1,0 +1,12 @@
+# API Configuration
+NEXT_PUBLIC_API_URL=https://aitiy.idro.co.uk/api
+NEXT_PUBLIC_APP_URL=https://aitiy.idro.co.uk
+
+# Feature Flags
+NEXT_PUBLIC_ENABLE_AUTH=true
+NEXT_PUBLIC_ENABLE_ANALYTICS=true
+
+# Disable static generation for pages with React Context
+NEXT_DISABLE_STATIC_GENERATION=true
+USE_MOCK_DATA=true
+API_BASE_URL=https://aitiy.idro.co.uk/api

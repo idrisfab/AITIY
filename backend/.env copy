@@ -1,0 +1,19 @@
+# Required
+ANTHROPIC_API_KEY=your-api-key-here  # You'll need to replace this with a valid key
+PERPLEXITY_API_KEY=pplx-abcde        # Optional
+
+# Deployment Configuration
+FRONTEND_URL=https://aitiy.idro.co.uk  # Your server IP
+ADDITIONAL_FRONTEND_URL=https://aitiy.idro.co.uk  # Your domain
+PORT=3001                          # Backend server port
+
+# Server Configuration
+NODE_ENV=production
+
+# Database
+DATABASE_URL="postgresql://postgres:mysecretpassword@localhost:5432/ai_embed_platform"
+
+# Authentication
+JWT_SECRET="9HJj%31HBBegrn@VtU%@4*H7R!%f7nq%"
+COOKIE_SECRET="TPQTvLsQg@!jT4j$TuZZ$675Uu!XDrW5"
+JWT_EXPIRES_IN="7d"
