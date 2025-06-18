@@ -82,12 +82,16 @@ export async function sendDirectChatCompletionRequest({
   messages,
   vendor = 'openai',
   embedId = '',
+  temperature = 0.7,
+  maxTokens,
 }: {
   apiKey?: string; // Make apiKey optional
   modelName: string;
   messages: Message[];
   vendor?: ModelVendor;
   embedId?: string;
+  temperature?: number;
+  maxTokens?: number;
 }): Promise<ChatCompletionResponse> {
   // For public embeds, use a different endpoint that doesn't require authentication
   const isPublicEmbed = embedId && embedId.length > 0;
@@ -112,8 +116,8 @@ export async function sendDirectChatCompletionRequest({
       modelName,
       messages,
       vendor,
-      temperature: 0.7,
-      maxTokens: vendor === 'anthropic' ? 4000 : vendor === 'gemini' ? 2048 : 1024,
+      temperature: temperature ?? 0.7,
+      maxTokens: maxTokens ?? (vendor === 'anthropic' ? 4000 : vendor === 'gemini' ? 2048 : 1024),
     };
   
   console.log('Sending request with body:', JSON.stringify(requestBody).substring(0, 200) + '...');

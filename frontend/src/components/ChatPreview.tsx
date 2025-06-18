@@ -19,6 +19,15 @@ interface ChatPreviewProps {
   apiKey?: string;
   modelName?: string;
   useRealApi?: boolean;
+  // New settings
+  temperature?: number;
+  maxTokensPerMessage?: number;
+  messageHistory?: number;
+  allowAttachments?: boolean;
+  showBranding?: boolean;
+  enableMarkdown?: boolean;
+  enableCodeHighlighting?: boolean;
+  backgroundColor?: string;
 }
 
 export function ChatPreview({
@@ -32,7 +41,16 @@ export function ChatPreview({
   isInteractive = true,
   apiKey = '',
   modelName = 'gpt-3.5-turbo',
-  useRealApi = false
+  useRealApi = false,
+  // New settings with defaults
+  temperature = 0.7,
+  maxTokensPerMessage = 2000,
+  messageHistory = 10,
+  allowAttachments = false,
+  showBranding = true,
+  enableMarkdown = true,
+  enableCodeHighlighting = true,
+  backgroundColor = '#FFFFFF'
 }: ChatPreviewProps) {
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -79,17 +97,23 @@ export function ChatPreview({
         }
         
         // Add message history (excluding welcome message if it's the only one)
+        // Use configured messageHistory to limit the number of messages
         const chatHistory = messages.length === 1 && messages[0].content === welcomeMessage 
           ? [] 
           : messages;
-          
-        conversationHistory.push(...chatHistory, userMessage);
         
-        // Make API call using the passed modelName
+        // Limit message history to configured value
+        const limitedChatHistory = chatHistory.slice(-messageHistory);
+          
+        conversationHistory.push(...limitedChatHistory, userMessage);
+        
+        // Make API call using the passed modelName and settings
         const response = await sendDirectChatCompletionRequest({
           apiKey,
           modelName,
           messages: conversationHistory,
+          temperature,
+          maxTokens: maxTokensPerMessage,
         });
         
         // Extract assistant's response
@@ -189,7 +213,12 @@ export function ChatPreview({
   };
 
   return (
-    <div className={`flex flex-col rounded-lg border shadow-lg h-full ${isDark ? 'dark bg-gray-900' : 'bg-white'} overflow-hidden`}>
+    <div
+      className={`flex flex-col h-full shadow-xl rounded-lg overflow-hidden ${isDark ? 'dark' : ''}`}
+      style={{
+        backgroundColor: backgroundColor,
+      }}
+    >
       {/* Header */}
       <div
         className="flex items-center justify-between rounded-t-lg p-4"
@@ -280,6 +309,17 @@ export function ChatPreview({
               boxShadow: 'none',
             }}
           />
+          {allowAttachments && (
+            <button
+              className="h-12 bg-gray-100 text-gray-600 px-3 disabled:opacity-50 transition-opacity flex items-center justify-center hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              style={{ width: '44px' }}
+              disabled={!isInteractive}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            </button>
+          )}
           <button
             onClick={sendMessage}
             className="h-12 bg-primary text-primary-foreground rounded-r-2xl px-4 disabled:opacity-50 transition-opacity flex items-center justify-center"
@@ -295,6 +335,11 @@ export function ChatPreview({
             </svg>
           </button>
         </div>
+        {showBranding && (
+          <div className="mt-3 text-center text-xs text-gray-400">
+            Powered by AITIY
+          </div>
+        )}
       </div>
     </div>
   );

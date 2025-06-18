@@ -66,6 +66,7 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
   const [welcomeMessage, setWelcomeMessage] = useState(embed?.welcomeMessage || '👋 Hi! How can I help you today?');
   const [customHeaderText, setCustomHeaderText] = useState(embed?.settings?.customHeaderText || 'Chat with us');
   const [customPlaceholderText, setCustomPlaceholderText] = useState(embed?.settings?.customPlaceholderText || 'Type your message...');
+  const [backgroundColor, setBackgroundColor] = useState(embed?.settings?.backgroundColor || '#FFFFFF');
   
   // Add state for model settings
   const [temperature, setTemperature] = useState(embed?.settings?.temperature ?? 0.7);
@@ -108,6 +109,7 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
       setWelcomeMessage(embed.welcomeMessage || '👋 Hi! How can I help you today?');
       setCustomHeaderText(embed.settings?.customHeaderText || 'Chat with us');
       setCustomPlaceholderText(embed.settings?.customPlaceholderText || 'Type your message...');
+      setBackgroundColor(embed.settings?.backgroundColor || '#FFFFFF');
       
       // Sync model settings
       setTemperature(embed.settings?.temperature ?? 0.7);
@@ -249,7 +251,7 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
         ...embed.settings,
         customHeaderText,
         customPlaceholderText,
-        // Model settings
+        backgroundColor,
         temperature,
         maxTokensPerMessage,
         messageHistory,
@@ -553,14 +555,28 @@ import { AttiyChat } from '@attiy/vue';
                           />
                           <Input
                             id="primaryColor"
+                            type="color"
                             value={primaryColor}
-                            onChange={e => setPrimaryColor(e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            className="w-20 h-10 p-1"
                           />
                         </div>
                         <p className="text-xs text-muted-foreground">
                           Changes are reflected immediately in the preview.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="backgroundColor">Background Color</Label>
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-10 h-10 rounded-md border border-gray-200 dark:border-gray-700"
+                            style={{ backgroundColor: backgroundColor }}
+                          />
+                          <Input id="backgroundColor" type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-20 h-10 p-1" />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Set the background color of the chat widget.
                         </p>
                       </div>
                       
@@ -840,6 +856,14 @@ import { AttiyChat } from '@attiy/vue';
                         apiKey={apiKeyValue}
                         modelName={selectedModelId}
                         useRealApi={useRealApi && !!apiKeyValue}
+                        temperature={temperature}
+                        maxTokensPerMessage={maxTokensPerMessage}
+                        messageHistory={messageHistory}
+                        allowAttachments={allowAttachments}
+                        showBranding={showBranding}
+                        enableMarkdown={enableMarkdown}
+                        enableCodeHighlighting={enableCodeHighlighting}
+                        backgroundColor={backgroundColor}
                       />
                     </div>
                   </div>
@@ -877,6 +901,14 @@ import { AttiyChat } from '@attiy/vue';
                     customHeaderText={customHeaderText}
                     customPlaceholderText={customPlaceholderText}
                     systemPrompt={systemPrompt}
+                    temperature={temperature}
+                    maxTokensPerMessage={maxTokensPerMessage}
+                    messageHistory={messageHistory}
+                    allowAttachments={allowAttachments}
+                    showBranding={showBranding}
+                    enableMarkdown={enableMarkdown}
+                    enableCodeHighlighting={enableCodeHighlighting}
+                    backgroundColor={backgroundColor}
                   />
                 </div>
                 <div className="flex items-center mt-4 text-sm text-gray-500">
