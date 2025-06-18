@@ -67,6 +67,7 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
   const [customHeaderText, setCustomHeaderText] = useState(embed?.settings?.customHeaderText || 'Chat with us');
   const [customPlaceholderText, setCustomPlaceholderText] = useState(embed?.settings?.customPlaceholderText || 'Type your message...');
   const [backgroundColor, setBackgroundColor] = useState(embed?.settings?.backgroundColor || '#FFFFFF');
+  const [previewBackgroundColor, setPreviewBackgroundColor] = useState('#F3F4F6');
   
   // Add state for model settings
   const [temperature, setTemperature] = useState(embed?.settings?.temperature ?? 0.7);
@@ -581,6 +582,20 @@ import { AttiyChat } from '@attiy/vue';
                       </div>
                       
                       <div className="space-y-2">
+                        <Label htmlFor="previewBackgroundColor">Preview Background</Label>
+                        <div className="flex items-center gap-3">
+                           <div 
+                            className="w-10 h-10 rounded-md border border-gray-200 dark:border-gray-700"
+                            style={{ backgroundColor: previewBackgroundColor }}
+                          />
+                          <Input id="previewBackgroundColor" type="color" value={previewBackgroundColor} onChange={(e) => setPreviewBackgroundColor(e.target.value)} className="w-20 h-10 p-1" />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Change the background color of the preview area.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
                         <Label htmlFor="welcomeMessage">Welcome Message</Label>
                         <Input
                           id="welcomeMessage"
@@ -842,7 +857,7 @@ import { AttiyChat } from '@attiy/vue';
                     </div>
                   </div>
                   
-                  <div className="border border-gray-200 rounded-lg p-6 dark:border-gray-800">
+                  <div className="border border-gray-200 rounded-lg p-6 dark:border-gray-800" style={{ backgroundColor: previewBackgroundColor }}>
                     <div className="max-w-md mx-auto" style={{ height: responsive ? 'auto' : `${height}px` }}>
                       <ChatPreview 
                         theme={theme} 

@@ -5,7 +5,7 @@ import type { ModelInfo } from '@/types/models';
 import type { AnalyticsData } from '@/types/analytics';
 
 // Use relative URLs to leverage the nginx proxy
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('token') || Cookies.get('token');
