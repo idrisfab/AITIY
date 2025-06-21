@@ -17,8 +17,8 @@ import { authLimiter } from '../middleware/rateLimit';
 const router = express.Router();
 
 // POST routes for actual authentication
-router.post('/register/?', validate(registerSchema), register);
-router.post('/login/?', validate(loginSchema), login);
+router.post('/register', validate(registerSchema), register);
+router.post('/login', validate(loginSchema), login);
 
 // GET routes to serve the login/register pages (for Next.js frontend)
 // These routes are needed because the frontend is making GET requests to these endpoints

@@ -27,7 +27,6 @@ interface ChatPreviewProps {
   showBranding?: boolean;
   enableMarkdown?: boolean;
   enableCodeHighlighting?: boolean;
-  backgroundColor?: string;
 }
 
 export function ChatPreview({
@@ -49,8 +48,7 @@ export function ChatPreview({
   allowAttachments = false,
   showBranding = true,
   enableMarkdown = true,
-  enableCodeHighlighting = true,
-  backgroundColor = '#FFFFFF'
+  enableCodeHighlighting = true
 }: ChatPreviewProps) {
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -213,12 +211,7 @@ export function ChatPreview({
   };
 
   return (
-    <div
-      className={`flex flex-col h-full shadow-xl rounded-lg overflow-hidden ${isDark ? 'dark' : ''}`}
-      style={{
-        backgroundColor: backgroundColor,
-      }}
-    >
+    <div className={`flex flex-col rounded-lg border shadow-lg h-full ${isDark ? 'dark bg-gray-900' : 'bg-white'} overflow-hidden`}>
       {/* Header */}
       <div
         className="flex items-center justify-between rounded-t-lg p-4"

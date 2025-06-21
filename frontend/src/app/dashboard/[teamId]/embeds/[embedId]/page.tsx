@@ -66,8 +66,6 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
   const [welcomeMessage, setWelcomeMessage] = useState(embed?.welcomeMessage || '👋 Hi! How can I help you today?');
   const [customHeaderText, setCustomHeaderText] = useState(embed?.settings?.customHeaderText || 'Chat with us');
   const [customPlaceholderText, setCustomPlaceholderText] = useState(embed?.settings?.customPlaceholderText || 'Type your message...');
-  const [backgroundColor, setBackgroundColor] = useState(embed?.settings?.backgroundColor || '#FFFFFF');
-  const [previewBackgroundColor, setPreviewBackgroundColor] = useState('#F3F4F6');
   
   // Add state for model settings
   const [temperature, setTemperature] = useState(embed?.settings?.temperature ?? 0.7);
@@ -110,7 +108,6 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
       setWelcomeMessage(embed.welcomeMessage || '👋 Hi! How can I help you today?');
       setCustomHeaderText(embed.settings?.customHeaderText || 'Chat with us');
       setCustomPlaceholderText(embed.settings?.customPlaceholderText || 'Type your message...');
-      setBackgroundColor(embed.settings?.backgroundColor || '#FFFFFF');
       
       // Sync model settings
       setTemperature(embed.settings?.temperature ?? 0.7);
@@ -252,7 +249,7 @@ export default function EmbedConfigPage({ params }: EmbedConfigPageProps) {
         ...embed.settings,
         customHeaderText,
         customPlaceholderText,
-        backgroundColor,
+        // Model settings
         temperature,
         maxTokensPerMessage,
         messageHistory,
@@ -556,10 +553,10 @@ import { AttiyChat } from '@attiy/vue';
                           />
                           <Input
                             id="primaryColor"
-                            type="color"
                             value={primaryColor}
-                            onChange={(e) => setPrimaryColor(e.target.value)}
-                            className="w-20 h-10 p-1"
+                            onChange={e => setPrimaryColor(e.target.value)}
+                            placeholder="#000000"
+                            className="flex-1"
                           />
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -567,34 +564,6 @@ import { AttiyChat } from '@attiy/vue';
                         </p>
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="backgroundColor">Background Color</Label>
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-10 h-10 rounded-md border border-gray-200 dark:border-gray-700"
-                            style={{ backgroundColor: backgroundColor }}
-                          />
-                          <Input id="backgroundColor" type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-20 h-10 p-1" />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Set the background color of the chat widget.
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="previewBackgroundColor">Preview Background</Label>
-                        <div className="flex items-center gap-3">
-                           <div 
-                            className="w-10 h-10 rounded-md border border-gray-200 dark:border-gray-700"
-                            style={{ backgroundColor: previewBackgroundColor }}
-                          />
-                          <Input id="previewBackgroundColor" type="color" value={previewBackgroundColor} onChange={(e) => setPreviewBackgroundColor(e.target.value)} className="w-20 h-10 p-1" />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Change the background color of the preview area.
-                        </p>
-                      </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="welcomeMessage">Welcome Message</Label>
                         <Input
@@ -857,7 +826,7 @@ import { AttiyChat } from '@attiy/vue';
                     </div>
                   </div>
                   
-                  <div className="border border-gray-200 rounded-lg p-6 dark:border-gray-800" style={{ backgroundColor: previewBackgroundColor }}>
+                  <div className="border border-gray-200 rounded-lg p-6 dark:border-gray-800">
                     <div className="max-w-md mx-auto" style={{ height: responsive ? 'auto' : `${height}px` }}>
                       <ChatPreview 
                         theme={theme} 
@@ -878,7 +847,6 @@ import { AttiyChat } from '@attiy/vue';
                         showBranding={showBranding}
                         enableMarkdown={enableMarkdown}
                         enableCodeHighlighting={enableCodeHighlighting}
-                        backgroundColor={backgroundColor}
                       />
                     </div>
                   </div>
@@ -923,7 +891,6 @@ import { AttiyChat } from '@attiy/vue';
                     showBranding={showBranding}
                     enableMarkdown={enableMarkdown}
                     enableCodeHighlighting={enableCodeHighlighting}
-                    backgroundColor={backgroundColor}
                   />
                 </div>
                 <div className="flex items-center mt-4 text-sm text-gray-500">

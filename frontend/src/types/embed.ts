@@ -73,9 +73,8 @@ export interface ChatEmbedConfig {
   settings: {
     allowAttachments: boolean;
     requireUserEmail: boolean;
-    showBranding?: boolean;
-    markdownSupport?: boolean;
-    backgroundColor?: string;
+    showBranding: boolean;
+    customCss?: string;
     maxTokensPerMessage?: number;
     temperature?: number;
     messageHistory?: number;
@@ -117,8 +116,6 @@ export const ChatEmbedConfigSchema = z.object({
     allowAttachments: z.boolean().default(false),
     requireUserEmail: z.boolean().default(true),
     showBranding: z.boolean().default(true),
-    markdownSupport: z.boolean().optional(),
-    backgroundColor: z.string().optional(),
     customCss: z.string().max(2000).optional(),
     maxTokensPerMessage: z.number().min(100).max(4000).optional(),
     temperature: z.number().min(0).max(2).optional(),
