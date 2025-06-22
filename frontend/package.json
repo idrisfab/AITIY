@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/process-embed.js",
+    "prestart": "npm run build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

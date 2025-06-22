@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'aitiy-frontend',
-      script: '/root/AITIY/frontend/node_modules/.bin/next',
+      script: 'npm',
       args: 'start',
       cwd: '/root/AITIY/frontend',
       instances: 1,
