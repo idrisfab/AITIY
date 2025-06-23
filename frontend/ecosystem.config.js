@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'aitiy-frontend',
-      script: 'npm',
-      args: 'start',
+      script: '/root/.local/share/fnm/node-versions/v24.0.0/installation/bin/npm',
+      args: 'run start',
       cwd: '/root/AITIY/frontend',
       instances: 1,
       autorestart: true,
